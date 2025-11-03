@@ -9,8 +9,13 @@ COPY . .
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y unixodbc unixodbc-dev
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
+# 5️⃣ Add Microsoft's official GPG key (apt-key deprecated, so use gpg --dearmor)
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+    | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg
+
+# 6️⃣ Add Microsoft’s Debian 12 (Bookworm) repository (for SQL driver)
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+    > /etc/apt/sources.list.d/mssql-release.list
 RUN apt-get update
 RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
 
